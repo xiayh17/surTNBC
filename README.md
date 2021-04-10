@@ -31,7 +31,7 @@ library(dplyr)
 library(dbplyr)
 iso_tpm2 <- data.table::fread("iso_tpm.txt")
 iso_tpm2 <- iso_tpm2 %>% dplyr::rename(names = V1)
-con <- DBI::dbConnect(RSQLite::SQLite(), "portal-database-output.sqlite")
+con <- DBI::dbConnect(RSQLite::SQLite(), "inst/app/data/portal-database-output.sqlite")
 dplyr::copy_to(con, iso_tpm2, "iso_tpm2",
                overwrite = TRUE,
                temporary = FALSE, 
