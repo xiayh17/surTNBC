@@ -16,7 +16,28 @@
 ## Dependencies ----
 ## Add one line by package you want to add as dependency
 usethis::use_package( "thinkr" )
+usethis::use_package( "shiny" )
+usethis::use_package( "shinyWidgets" )
+usethis::use_package( "tibble" )
+usethis::use_package( "tidyr" )
+usethis::use_package( "data.table" )
+usethis::use_package( "DT" )
+usethis::use_package( "doParallel" )
+usethis::use_package( "foreach" )
+usethis::use_package( "plyr" )
+usethis::use_package( "shinyjs" )
+usethis::use_package( "shinycssloaders" )
+usethis::use_package( "RSQLite" )
+usethis::use_package( "DBI" )
+usethis::use_package( "dplyr" )
+usethis::use_package( "dbplyr" )
+usethis::use_package( "utils" )
+usethis::use_package( "survminer" )
+usethis::use_package( "ggplot2" )
+usethis::use_package( "magrittr" )
 
+usethis::use_dev_package( "bs4Dash", remote = "RinteRface/bs4Dash" )
+usethis::use_dev_package( "golem", remote = "Thinkr-open/golem" )
 ## Add modules ----
 ## Create a module infrastructure in R/
 golem::add_module( name = "search" ) # Name of the module

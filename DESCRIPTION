@@ -1,21 +1,51 @@
 Package: surTNBC
 Title: An Amazing Shiny App
 Version: 0.0.0.9000
-Authors@R: 
-    person(given = "firstname",
-           family = "lastname",
+Authors@R: c(    person(given = "Yonghe",
+           family = "Xia",
            role = c("aut", "cre"),
-           email = "your@email.com")
+           email = "xiayh17@gmail.com"),
+    person(given = "Jianming",
+           family = "Zeng",
+           role = c("aut"),
+           email = "jmzeng1314@163.com"),
+    person(given = "Wei",
+           family = "Jing",
+           role = c("aut"),
+           email = "18301151828@163.com"))
 Description: What the package does (one paragraph).
 License: What license is it under?
 Imports: 
-    config (>= 0.3.1),
-    golem (>= 0.3.0),
+    bs4Dash (>= 2.0.0.9000),
+    config (>= 0.3),
+    data.table,
+    DBI,
+    dbplyr,
+    doParallel,
+    dplyr,
+    DT,
+    foreach,
+    ggplot2,
+    golem (>= 0.3),
     magrittr,
     pkgload,
-    shiny (>= 1.6.0.9000)
+    plyr,
+    RSQLite,
+    shiny (>= 1.6),
+    shinycssloaders,
+    shinyjs,
+    shinyWidgets,
+    survminer,
+    thinkr,
+    tibble,
+    tidyr,
+    utils
+biocViews:
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
 Depends: 
     R (>= 2.10)
+Remotes:  
+    RinteRface/bs4Dash,
+    Thinkr-open/golem
