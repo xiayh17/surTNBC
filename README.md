@@ -11,7 +11,7 @@ The goal of surTNBC is to do survival analysis from a deg database
 ## Installation
 
 You can install the released version of surTNBC from
-[github](https://github.com/xiayh17/surTNBC) or gitee with:
+[github](https://github.com/xiayh17/surTNBC) or [gitee](https://gitee.com/xiayh17/surTNBC) with:
 
 ``` r
 devtools::install_github("xiayh17/surTNBC")
