@@ -107,15 +107,21 @@ mod_search_server <- function(id){
                " milliseconds" )
       })
       
-      
-      
       tar <- reactive({
         ncol(resdata())
       })
+      
+      webdata <- reactive({
+        resdata <- resdata()
+        id <- rownames(resdata())
+        EnsemblID <- aensLink(id,id)
+        data.frame(EnsemblID = EnsemblID, resdata)
+      })
+      
       output$geneInfo <- DT::renderDT(
         #output$preview3 <- reactable::renderReactable({
-        DT::datatable( resdata(), escape = FALSE, selection="multiple",
-                       rownames = TRUE,
+        DT::datatable( webdata(), escape = FALSE, selection="multiple",
+                       rownames = FALSE,
                        style = "bootstrap4",
                        extensions = 'Buttons',
                        options=list(
@@ -136,7 +142,8 @@ mod_search_server <- function(id){
                          fixedColumns = TRUE,
                          fixedHeader = TRUE
                        )
-        )
+        )%>% 
+          DT::formatRound(columns=2:ncol(resdata()),digits = 2)
       )
       shinyjs::show(id = 'loading2')
       

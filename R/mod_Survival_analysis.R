@@ -17,15 +17,20 @@ mod_Survival_analysis_ui <- function(id){
         "Data Prepareration for analysis",
         icon = icon("table"),
         fluidRow(
-          column(12,textOutput(ns("count")))
+          column(12,hr()),
+          column(12,htmlOutput(ns("count"))),
+          column(12,hr()),
+          column(12,DT::DTOutput(ns("table")))
         )
       ),
       tabPanel(
         "Plot One by One",
         icon = icon("drafting-compass"),
         fluidRow(
-          column(12,uiOutput(outputId = ns('tt'))),
+          # column(12,uiOutput(outputId = ns('tt'))),
+          column(12,hr()),
           column(12,uiOutput(outputId = ns('ss'))),
+          column(12,hr()),
           column(12,plotOutput(ns("splot")))
         )
       ),
@@ -33,7 +38,9 @@ mod_Survival_analysis_ui <- function(id){
         "Plot All in Onetime",
         icon = icon("layer-group"),
         fluidRow(
+          column(12,hr()),
           downloadButton(ns('dallPlot'), 'Download plot as PDF'),
+          column(12,hr()),
           downloadButton(ns('sep.plot'), 'Download Seperate Plots')
         )
       )
@@ -64,7 +71,9 @@ mod_Survival_analysis_server <- function(id, matdata = ""){
     })
     
     output$count <- renderText({
-      paste0("There will be ",count()[1],"tumor samples contained in Survival analysis")
+      paste("There will be ",
+            "<font color=\"#0275D8\"><b>",count()[1], "</b></font>",
+            " tumor samples contained in Survival analysis")
     })
     
     mat <- reactive({
@@ -114,6 +123,33 @@ mod_Survival_analysis_server <- function(id, matdata = ""){
       surv_fit(formulae, data = tmp.cat)
     })
     
+    output$table <- DT::renderDT(
+      #output$preview3 <- reactable::renderReactable({
+      DT::datatable( tmp.cat(), escape = FALSE, selection="multiple",
+                     rownames = TRUE,
+                     style = "bootstrap4",
+                     extensions = 'Buttons',
+                     options=list(
+                       #sDom  = '<"top">flrt<"bottom">ip',
+                       #columnDefs = list(list(className = 'dt-center', targets = 5)),
+                       pageLength = -1,
+                       #lengthMenu = list(c(15, 50, 100, -1),c(15, 50, 100, "ALL")),
+                       dom = 'Bfrtip',
+                       # columnDefs = list(list(
+                       #   targets = c(10:(tar()-1)), visible = FALSE
+                       # )),
+                       buttons = list(list(extend ='collection',
+                                           buttons =  c('csv', 'excel', 'pdf'),text = 'Download View'
+                       ),
+                       list(extend ='colvis',text = 'Hide Columns')),
+                       scrollX = TRUE,
+                       scrollY = TRUE,
+                       fixedColumns = TRUE,
+                       fixedHeader = TRUE
+                     )
+      )
+    )
+    
     plotsf <- function() {
       fits <- fits()
       tmp.cat <- tmp.cat()
@@ -139,19 +175,19 @@ mod_Survival_analysis_server <- function(id, matdata = ""){
       ceiling(nrow(a)/4)*300
     })
     
-    output$tt <- renderUI({
-      shinyWidgets::sliderTextInput(
-        inputId = ns("plotw"),
-        label = "Choose one to plot:",
-        grid = TRUE,
-        width = "100%",
-        choices = rownames(mat())
-      )
-    })
+    # output$tt <- renderUI({
+    #   shinyWidgets::sliderTextInput(
+    #     inputId = ns("plotw"),
+    #     label = "Choose one to plot:",
+    #     grid = TRUE,
+    #     width = "100%",
+    #     choices = rownames(mat())
+    #   )
+    # })
     
     output$ss <- renderUI({
       shinyWidgets::pickerInput(
-        inputId = ns("picker"),
+        inputId = ns("plotw"),
         label = "Quick search", 
         choices = rownames(mat()),
         options = list(
@@ -159,31 +195,31 @@ mod_Survival_analysis_server <- function(id, matdata = ""){
       )
     })
     
-    observeEvent(input$plotw,{
-      output$ss <- renderUI({
-        shinyWidgets::pickerInput(
-          inputId = ns("picker"),
-          label = "Quick search", 
-          choices = rownames(mat()),
-          selected = input$plotw,
-          options = list(
-            `live-search` = TRUE)
-        )
-      })
-    })
-    
-    observeEvent(input$picker,{
-      output$tt <- renderUI({
-        shinyWidgets::sliderTextInput(
-          inputId = ns("plotw"),
-          label = "Choose one to plot:",
-          grid = TRUE,
-          width = "100%",
-          selected = input$picker,
-          choices = rownames(mat())
-        )
-      })
-    })
+    # observeEvent(input$plotw,{
+    #   output$ss <- renderUI({
+    #     shinyWidgets::pickerInput(
+    #       inputId = ns("picker"),
+    #       label = "Quick search", 
+    #       choices = rownames(mat()),
+    #       selected = input$plotw,
+    #       options = list(
+    #         `live-search` = TRUE)
+    #     )
+    #   })
+    # })
+    # 
+    # observeEvent(input$picker,{
+    #   output$tt <- renderUI({
+    #     shinyWidgets::sliderTextInput(
+    #       inputId = ns("plotw"),
+    #       label = "Choose one to plot:",
+    #       grid = TRUE,
+    #       width = "100%",
+    #       selected = input$picker,
+    #       choices = rownames(mat())
+    #     )
+    #   })
+    # })
     
     output$splot <- renderPlot(
       width = 1200,

@@ -18,7 +18,7 @@ mod_Boxplot_of_Diff_ui <- function(id){
         icon = icon("spa"),
         fluidRow(
           column(12,hr()),
-          column(12,uiOutput(outputId = ns('uu'))),
+          # column(12,uiOutput(outputId = ns('uu'))),
           column(12,uiOutput(outputId = ns('tt'))),
           column(12,hr()),
           column(6,plotOutput(ns("sinplot"))),
@@ -30,6 +30,7 @@ mod_Boxplot_of_Diff_ui <- function(id){
         icon = icon("autoprefixer"),
         hr(),
         downloadButton(ns('dallPlot'), 'Download plot as PDF'),
+        column(12,hr()),
         downloadButton(ns('sep.plot'), 'Download Seperate Plots'),
         br(),
         hr(),
@@ -65,19 +66,19 @@ mod_Boxplot_of_Diff_server <- function(id,matdata=""){
       ceiling(dim(a)[1]/4)*300
     })
     
-    output$uu <- renderUI({
-      shinyWidgets::sliderTextInput(
-        inputId = ns("choose"),
-        label = "Choose one to plot:",
-        grid = TRUE,
-        width = "100%",
-        choices = rownames(a())
-      )
-    })
+    # output$uu <- renderUI({
+    #   shinyWidgets::sliderTextInput(
+    #     inputId = ns("choose"),
+    #     label = "Choose one to plot:",
+    #     grid = TRUE,
+    #     width = "100%",
+    #     choices = rownames(a())
+    #   )
+    # })
     
     output$tt <- renderUI({
       shinyWidgets::pickerInput(
-        inputId = "choosep",
+        inputId = ns("choose"),
         label = "Quick search", 
         choices = rownames(a()),
         options = list(
@@ -99,31 +100,31 @@ mod_Boxplot_of_Diff_server <- function(id,matdata=""){
       data.table::setDT(res)
     })
     
-    observeEvent(input$choose,{
-      output$tt <- renderUI({
-        shinyWidgets::pickerInput(
-          inputId = ns("choosep"),
-          label = "Quick search", 
-          choices = rownames(a()),
-          selected = input$choose,
-          options = list(
-            `live-search` = TRUE)
-        )
-      })
-    })
-    
-    observeEvent(input$choosep,{
-      output$uu <- renderUI({
-        shinyWidgets::sliderTextInput(
-          inputId = ns("choose"),
-          label = "Choose one to plot:",
-          grid = TRUE,
-          width = "100%",
-          selected = input$choosep,
-          choices = rownames(a())
-        )
-      })
-    })
+    # observeEvent(input$choose,{
+    #   output$tt <- renderUI({
+    #     shinyWidgets::pickerInput(
+    #       inputId = ns("choosep"),
+    #       label = "Quick search", 
+    #       choices = rownames(a()),
+    #       selected = input$choose,
+    #       options = list(
+    #         `live-search` = TRUE)
+    #     )
+    #   })
+    # })
+    # 
+    # observeEvent(input$choosep,{
+    #   output$uu <- renderUI({
+    #     shinyWidgets::sliderTextInput(
+    #       inputId = ns("choose"),
+    #       label = "Choose one to plot:",
+    #       grid = TRUE,
+    #       width = "100%",
+    #       selected = input$choosep,
+    #       choices = rownames(a())
+    #     )
+    #   })
+    # })
     
     
     dat <- reactive({
@@ -134,7 +135,7 @@ mod_Boxplot_of_Diff_server <- function(id,matdata=""){
     output$table <- DT::renderDT(
       #output$preview3 <- reactable::renderReactable({
       DT::datatable( dat(), escape = FALSE, selection="multiple",
-                     rownames = TRUE,
+                     rownames = FALSE,
                      style = "bootstrap4",
                      extensions = 'Buttons',
                      options=list(
@@ -143,9 +144,9 @@ mod_Boxplot_of_Diff_server <- function(id,matdata=""){
                        pageLength = -1,
                        #lengthMenu = list(c(15, 50, 100, -1),c(15, 50, 100, "ALL")),
                        dom = 'Bfrtip',
-                       # columnDefs = list(list(
-                       #   targets = c(10:(tar()-1)), visible = FALSE
-                       # )),
+                       columnDefs = list(list(
+                         targets = 2, visible = FALSE
+                       )),
                        buttons = list(list(extend ='collection',
                                            buttons =  c('csv', 'excel', 'pdf'),text = 'Download View'
                        ),
@@ -153,9 +154,11 @@ mod_Boxplot_of_Diff_server <- function(id,matdata=""){
                        scrollX = TRUE,
                        scrollY = TRUE,
                        fixedColumns = TRUE,
-                       fixedHeader = TRUE
+                       fixedHeader = TRUE,
+                       rownames= FALSE
                      )
-      )
+      ) %>% 
+        DT::formatRound(columns='value',digits = 2)
     )
     
     splot <- function() {
