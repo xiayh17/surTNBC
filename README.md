@@ -19,11 +19,15 @@ devtools::install_git("https://gitee.com/xiayh17/surTNBC")
 ```
 
 ## download data
-
-[click to
-download](https://yonghexia-my.sharepoint.com/:t:/g/personal/xiayh_yonghexia_onmicrosoft_com/Ef6PWaUOVFRDrEJ04nsXmfkByKL0DY1h8jBnjd2UyOiuig?e=4Vsmkx)
-
+click to download
+[iso_tpm.txt](https://yonghexia-my.sharepoint.com/:t:/g/personal/xiayh_yonghexia_onmicrosoft_com/Ef6PWaUOVFRDrEJ04nsXmfkByKL0DY1h8jBnjd2UyOiuig?e=4Vsmkx)
+[clinical.txt](https://yonghexia-my.sharepoint.com/:t:/g/personal/xiayh_yonghexia_onmicrosoft_com/Ef-8-hnDXatBnmmFWEQWB24BFj6Qb94GTpKHdMfRmYwJGg?e=cSbO8e)
 ## data prepare
+create this directory below your working directory
+
+inst/app/data/
+
+save clinical.txt and portal-database-output.sqlite into it
 
 ``` r
 library(DBI)
@@ -42,3 +46,6 @@ dplyr::copy_to(con, iso_tpm2, "iso_tpm2",
 # call dbDisconnect() when finished working with a connection 
 DBI::dbDisconnect(con)
 ```
+
+## run
+surTNBC::run_app()
