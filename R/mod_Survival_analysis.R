@@ -20,6 +20,25 @@ mod_Survival_analysis_ui <- function(id){
           column(12,hr()),
           column(12,htmlOutput(ns("count"))),
           column(12,hr()),
+          column(12,
+                 shinyWidgets::prettyRadioButtons(
+                   inputId = ns("methods"),
+                   label = "Choose a Group Methods: ",
+                   choices = c("Auto" = "Auto", "Median" = "Median", "Trisection" = "Tri"),
+                   icon = icon("eye-dropper"),
+                   bigger = TRUE,
+                   inline = TRUE,
+                   fill = TRUE,
+                   plain = TRUE,
+                   status = "success",
+                   animation = "pulse"
+                 )
+                 ),
+          column(6,textOutput(ns("fail"))),
+          column(6,br()),
+          column(12,hr()),
+          column(12,helpText("Group result")),
+          column(12,hr()),
           column(12,DT::DTOutput(ns("table")))
         )
       ),
@@ -31,13 +50,20 @@ mod_Survival_analysis_ui <- function(id){
           column(12,hr()),
           column(12,uiOutput(outputId = ns('ss'))),
           column(12,hr()),
-          column(12,plotOutput(ns("splot")))
+          column(12,
+                 shinycssloaders::withSpinner(
+                   plotOutput(ns("splot")),
+                   type = 6
+                 )
+                 )
         )
       ),
       tabPanel(
         "Plot All in Onetime",
         icon = icon("layer-group"),
         fluidRow(
+          column(12,hr()),
+          helpText("Please click button to download plot"),
           column(12,hr()),
           downloadButton(ns('dallPlot'), 'Download plot as PDF'),
           column(12,hr()),
@@ -101,32 +127,85 @@ mod_Survival_analysis_server <- function(id, matdata = ""){
     tmp.cat <- reactive({
       phe2 <- phe2()
       variables <- colnames(phe2)[6:(5+ncol(phe2)-4)-1]
-      phe.cut <- survminer::surv_cutpoint(
-        phe2,
-        time = "RFS_time_Months",
-        event = "RFS_Status",
-        variables = variables,
-        minprop = 0.0001
-      )
-      survminer::surv_categorize(phe.cut)
+      if (input$methods == "Auto") {
+        phe.cut <- survminer::surv_cutpoint(
+          phe2,
+          time = "RFS_time_Months",
+          event = "RFS_Status",
+          variables = variables,
+          minprop = 0.0001
+        )
+        survminer::surv_categorize(phe.cut)
+      } else if (input$methods == "Median") {
+        median.cut(
+          data = phe2,
+          time = "RFS_time_Months",
+          event = "RFS_Status",
+          variables = variables
+        )
+      } else if (input$methods == "Tri") {
+        tri.cut(
+          data = phe2,
+          time = "RFS_time_Months",
+          event = "RFS_Status",
+          variables = variables
+        )
+      }
     })
     
-    fits <- reactive({
-      phe2 <- phe2()
+    tmp.cat2 <- reactive({
       tmp.cat <- tmp.cat()
+      if (class(tmp.cat) == "list") {
+        tmp.cat[[1]]
+      } else {
+        tmp.cat
+      }
+    })
+    
+    output$ss <- renderUI({
+      shinyWidgets::pickerInput(
+        inputId = ns("plotw"),
+        label = "Quick search", 
+        choices = colnames(tmp.cat2())[c(-1,-2)],
+        options = list(
+          `live-search` = TRUE)
+      )
+    })
+    
+    wr <- function(data) {
+      tmp.cat <- tmp.cat()
+      if (class(tmp.cat) == "list") {
+        if (length(tmp.cat[[2]]) > 0) {
+          b <- paste(tmp.cat[[2]], collapse="; ")
+          paste0(b, " are not included for lacking of sufficient number of values; ", length(colnames(tmp.cat2())[c(-1,-2)]), " samples were grouped.")
+        } else {
+          paste0(length(colnames(tmp.cat2())[c(-1,-2)]), " samples were grouped.")
+        }
+      } else {
+        paste0(length(colnames(tmp.cat2())[c(-1,-2)]), " samples were grouped.")
+      }
+    }
+    
+    
+      output$fail <- renderText({
+        print(wr())
+      })
+    
+    fits <- reactive({
+      tmp.cat2 <- tmp.cat2()
       # lapply
       formulae <- list()
-      genes <- colnames(phe2)[6:(5+ncol(phe2)-4)-1]
+      genes <- colnames(tmp.cat2)[c(-1,-2)]
       formulae <- lapply(genes, function(x) as.formula(paste0("survival::Surv(RFS_time_Months, RFS_Status) ~ ", x)))
       
       require(survminer)
-      surv_fit(formulae, data = tmp.cat)
+      surv_fit(formulae, data = tmp.cat2)
     })
     
     output$table <- DT::renderDT(
       #output$preview3 <- reactable::renderReactable({
-      DT::datatable( tmp.cat(), escape = FALSE, selection="multiple",
-                     rownames = TRUE,
+      DT::datatable( tmp.cat2(), escape = FALSE, selection="multiple",
+                     rownames = FALSE,
                      style = "bootstrap4",
                      extensions = 'Buttons',
                      options=list(
@@ -152,8 +231,8 @@ mod_Survival_analysis_server <- function(id, matdata = ""){
     
     plotsf <- function() {
       fits <- fits()
-      tmp.cat <- tmp.cat()
-      survminer::ggsurvplot_list(fits, data = tmp.cat,
+      tmp.cat2 <- tmp.cat2()
+      survminer::ggsurvplot_list(fits, data = tmp.cat2,
                       surv.median.line = "hv", # Add medians survival
                       pval = TRUE,             # Add p-value and tervals 
                       conf.int = TRUE,        # Add the 95% confidence band
@@ -184,16 +263,6 @@ mod_Survival_analysis_server <- function(id, matdata = ""){
     #     choices = rownames(mat())
     #   )
     # })
-    
-    output$ss <- renderUI({
-      shinyWidgets::pickerInput(
-        inputId = ns("plotw"),
-        label = "Quick search", 
-        choices = rownames(mat()),
-        options = list(
-          `live-search` = TRUE)
-      )
-    })
     
     # observeEvent(input$plotw,{
     #   output$ss <- renderUI({
@@ -226,7 +295,7 @@ mod_Survival_analysis_server <- function(id, matdata = ""){
       height = 600,
       res = 100,
       {
-      plots()[[paste0("tmp.cat::",input$plotw)]]
+      plots()[[paste0("tmp.cat2::",input$plotw)]]
     })
     
     allplots <- function() {

@@ -10,7 +10,8 @@
 mod_Boxplot_of_Diff_ui <- function(id){
   ns <- NS(id)
   tagList(
-    
+    # hiden
+    shinyjs::useShinyjs(),
     bs4Dash::tabsetPanel(
       id = NULL,
       tabPanel(
@@ -21,7 +22,12 @@ mod_Boxplot_of_Diff_ui <- function(id){
           # column(12,uiOutput(outputId = ns('uu'))),
           column(12,uiOutput(outputId = ns('tt'))),
           column(12,hr()),
-          column(6,plotOutput(ns("sinplot"))),
+          column(6,
+                 shinycssloaders::withSpinner(
+                   plotOutput(ns("sinplot")),
+                   type = 6
+                 )
+                 ),
           column(6,DT::DTOutput(ns("table")))
         )
       ),
@@ -41,7 +47,12 @@ mod_Boxplot_of_Diff_ui <- function(id){
           color = "success"
         ),
         hr(),
-        plotOutput(ns("allplot"))
+        shinyjs::hidden(div(id = ns('loading'),
+                            shinycssloaders::withSpinner(
+                              plotOutput(ns("allplot")),
+                              type = 6
+                            )))
+        
       )
     )
     
@@ -145,7 +156,7 @@ mod_Boxplot_of_Diff_server <- function(id,matdata=""){
                        #lengthMenu = list(c(15, 50, 100, -1),c(15, 50, 100, "ALL")),
                        dom = 'Bfrtip',
                        columnDefs = list(list(
-                         targets = 2, visible = FALSE
+                         targets = "rowname", visible = FALSE
                        )),
                        buttons = list(list(extend ='collection',
                                            buttons =  c('csv', 'excel', 'pdf'),text = 'Download View'
@@ -204,6 +215,7 @@ mod_Boxplot_of_Diff_server <- function(id,matdata=""){
     }
     
     observeEvent(input$plotall, {
+      shinyjs::show(id = 'loading')
       output$allplot <- renderPlot(width = function() 1200,
                  height = function() allHeight(),
                  res = 100,
