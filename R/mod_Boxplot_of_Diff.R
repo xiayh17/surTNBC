@@ -156,7 +156,7 @@ mod_Boxplot_of_Diff_server <- function(id,matdata=""){
                        #lengthMenu = list(c(15, 50, 100, -1),c(15, 50, 100, "ALL")),
                        dom = 'Bfrtip',
                        columnDefs = list(list(
-                         targets = "rowname", visible = FALSE
+                         targets = 1, visible = FALSE
                        )),
                        buttons = list(list(extend ='collection',
                                            buttons =  c('csv', 'excel', 'pdf'),text = 'Download View'
@@ -165,8 +165,7 @@ mod_Boxplot_of_Diff_server <- function(id,matdata=""){
                        scrollX = TRUE,
                        scrollY = TRUE,
                        fixedColumns = TRUE,
-                       fixedHeader = TRUE,
-                       rownames= FALSE
+                       fixedHeader = TRUE
                      )
       ) %>% 
         DT::formatRound(columns='value',digits = 2)
